@@ -1,0 +1,15 @@
+{
+  "short_name": "SQP Tracker",
+  "name": "S Q P Daily Tracker",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#0369a1",
+  "background_color": "#111827"
+}

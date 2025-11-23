@@ -1,0 +1,5 @@
+{
+  "name": "S Q P Daily Tracker",
+  "description": "A visual tool to track daily Safety (S), Quality (Q), and Production (P) metrics for a month. Safety is tracked on a cross calendar, while Q and P are visualized as interactive 'holes' within stylized letters representing each metric.",
+  "requestFramePermissions": []
+}
