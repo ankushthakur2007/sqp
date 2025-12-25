@@ -1,4 +1,9 @@
-/* Base styles */
+/* ============================================
+   SQP DAILY TRACKER - COMPREHENSIVE STYLES
+   Safety, Quality, Production Tracking System
+   ============================================ */
+
+/* === BASE RESET & TYPOGRAPHY === */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -6,26 +11,435 @@
 }
 
 body {
-  font-family: 'Inter', sans-serif;
+  background: linear-gradient(135deg, #f9fafb 0%, #e5e7eb 100%);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color: #1f2937;
+  min-height: 100vh;
 }
 
-/* Custom scrollbar */
+/* === SVG LETTER SHAPES === */
+/* Solid filled letters for S, Q, P */
+.letter-path {
+  stroke: none;
+  transition: opacity 0.3s ease;
+}
+
+/* Letter Colors - Brand Identity */
+.s-letter-path { 
+  fill: #1f487c; /* Navy Blue - Safety */
+}
+
+.q-letter-path { 
+  fill: #c42727; /* Deep Red - Quality */
+}
+
+.p-letter-path { 
+  fill: #2f8e3c; /* Forest Green - Production */
+}
+
+/* === INTERACTIVE DOTS (DATE MARKERS) === */
+.dot {
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+}
+
+.dot:hover {
+  filter: brightness(1.1);
+}
+
+.dot:active {
+  transform: scale(0.95);
+}
+
+.dot-circle {
+  fill: white;
+  stroke: #4b5563;
+  stroke-width: 2.5;
+  transition: all 0.2s ease;
+}
+
+.dot:hover .dot-circle {
+  stroke-width: 3.5;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25));
+}
+
+.dot-number {
+  font-size: 12px;
+  font-weight: 700;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+  user-select: none;
+  fill: #1f2937;
+  font-family: 'Courier New', monospace;
+}
+
+/* === STATUS COLORS FOR PRODUCTION & QUALITY === */
+/* Good Status - Green */
+.dot-good .dot-circle {
+  fill: #22c55e;
+  stroke: #15803d;
+  stroke-width: 2.5;
+}
+
+.dot-good .dot-number {
+  fill: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Warning Status - Yellow */
+.dot-warning .dot-circle {
+  fill: #fbbf24;
+  stroke: #b45309;
+  stroke-width: 2.5;
+}
+
+.dot-warning .dot-number {
+  fill: #78350f;
+}
+
+/* Alert Status - Red */
+.dot-alert .dot-circle {
+  fill: #ef4444;
+  stroke: #b91c1c;
+  stroke-width: 2.5;
+}
+
+.dot-alert .dot-number {
+  fill: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* === STATUS COLORS FOR SAFETY === */
+/* Safe - Green */
+.dot-safe .dot-circle {
+  fill: #22c55e;
+  stroke: #15803d;
+  stroke-width: 2.5;
+}
+
+.dot-safe .dot-number {
+  fill: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Recordable Incident - Yellow */
+.dot-recordable .dot-circle {
+  fill: #fbbf24;
+  stroke: #b45309;
+  stroke-width: 2.5;
+}
+
+.dot-recordable .dot-number {
+  fill: #78350f;
+}
+
+/* Lost Time Incident - Red */
+.dot-lost-time .dot-circle {
+  fill: #ef4444;
+  stroke: #b91c1c;
+  stroke-width: 2.5;
+}
+
+.dot-lost-time .dot-number {
+  fill: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* No Data - Gray */
+.dot-no-data .dot-circle {
+  fill: white;
+  stroke: #9ca3af;
+  stroke-width: 2;
+}
+
+.dot-no-data .dot-number {
+  fill: #6b7280;
+}
+
+/* Selected Dot - Cyan Highlight */
+.dot-selected .dot-circle {
+  stroke: #06b6d4;
+  stroke-width: 5;
+  filter: drop-shadow(0 0 12px rgba(6, 182, 212, 0.7));
+}
+
+.dot-selected {
+  animation: pulse-ring 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-ring {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px rgba(6, 182, 212, 0.5));
+  }
+  50% {
+    filter: drop-shadow(0 0 16px rgba(6, 182, 212, 0.8));
+  }
+}
+
+/* === MODAL ANIMATIONS === */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+/* === SAVE CONFIRMATION === */
+@keyframes fade-in-out {
+  0% { 
+    opacity: 0; 
+    transform: translateY(5px); 
+  }
+  20% { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+  80% { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+  100% { 
+    opacity: 0; 
+    transform: translateY(5px); 
+  }
+}
+
+.animate-fade-in-out {
+  animation: fade-in-out 2.5s ease-in-out forwards;
+}
+
+/* === CUSTOM SCROLLBAR === */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #1f2937;
+  background: #f3f4f6;
+  border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #4b5563;
-  border-radius: 4px;
+  background: linear-gradient(180deg, #9ca3af 0%, #6b7280 100%);
+  border-radius: 5px;
+  border: 2px solid #f3f4f6;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #6b7280;
+  background: linear-gradient(180deg, #6b7280 0%, #4b5563 100%);
 }
+
+/* === FOCUS STYLES (ACCESSIBILITY) === */
+button:focus-visible,
+input:focus-visible,
+details:focus-visible {
+  outline: 2px solid #06b6d4;
+  outline-offset: 2px;
+}
+
+/* === LETTER CARD HOVER EFFECTS === */
+.letter-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.letter-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* === RESPONSIVE UTILITIES === */
+@media (max-width: 768px) {
+  .dot-circle {
+    r: 16;
+  }
+  
+  .dot-number {
+    font-size: 13px;
+  }
+  
+  body {
+    font-size: 14px;
+  }
+}
+
+/* === PRINT STYLES === */
+@media print {
+  body {
+    background: white;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+  
+  .letter-card {
+    page-break-inside: avoid;
+  }
+}
+
+/* === STATUS LEGEND INDICATORS === */
+.status-indicator {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+}
+
+/* === LOADING STATES === */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* === BUTTON RIPPLE EFFECT === */
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+.btn-ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-ripple::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 50%;
+  left: 50%;
+  pointer-events: none;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.3) 10%, transparent 10%);
+  background-size: 100% 100%;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+}
+
+.btn-ripple:active::after {
+  animation: ripple 0.6s ease-out;
+}
+
+/* === RANGE INPUT STYLING === */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-track {
+  background: #4b5563;
+  height: 8px;
+  border-radius: 4px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #06b6d4;
+  cursor: pointer;
+  margin-top: -6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  background: #0891b2;
+  transform: scale(1.1);
+}
+
+input[type="range"]::-moz-range-track {
+  background: #4b5563;
+  height: 8px;
+  border-radius: 4px;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #06b6d4;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+input[type="range"]::-moz-range-thumb:hover {
+  background: #0891b2;
+  transform: scale(1.1);
+}
+
+/* === NUMBER INPUT STYLING === */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* === RADIO BUTTON CUSTOM STYLING === */
+input[type="radio"] {
+  accent-color: #06b6d4;
+}
+
+/* === UTILITY CLASSES === */
+.text-gradient-sqp {
+  background: linear-gradient(135deg, #1f487c 0%, #c42727 50%, #2f8e3c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.card-shadow {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.card-shadow-lg {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* === DARK MODE SUPPORT (Optional Enhancement) === */
+@media (prefers-color-scheme: dark) {
+  body {
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+    color: #f9fafb;
+  }
+}
+

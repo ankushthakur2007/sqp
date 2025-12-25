@@ -9,22 +9,22 @@ import { SelectionSummary } from './components/SelectionSummary';
 
 
 const StatusLegend: React.FC = () => (
-  <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-gray-400" role="legend">
+  <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-gray-600" role="legend">
     <div className="flex items-center gap-2" title="Metric is at or above the 'Good' threshold">
-      <span className="w-3 h-3 rounded-full bg-green-600/80"></span>
+      <span className="w-3 h-3 rounded-full bg-green-500 border-2 border-green-800"></span>
       <span>Good</span>
     </div>
     <div className="flex items-center gap-2" title="Metric is between 'Good' and 'Alert' thresholds">
-      <span className="w-3 h-3 rounded-full bg-yellow-500/80"></span>
+      <span className="w-3 h-3 rounded-full bg-yellow-500 border-2 border-yellow-800"></span>
       <span>Warning</span>
     </div>
     <div className="flex items-center gap-2" title="Metric is below the 'Alert' threshold">
-      <span className="w-3 h-3 rounded-full bg-red-600/80"></span>
+      <span className="w-3 h-3 rounded-full bg-red-500 border-2 border-red-900"></span>
       <span>Alert</span>
     </div>
     <div className="flex items-center gap-2">
-      <span className="w-3 h-3 rounded-full bg-white"></span>
-      <span className="text-gray-400">No Data</span>
+      <span className="w-3 h-3 rounded-full bg-white border-2 border-gray-400"></span>
+      <span className="text-gray-500">No Data</span>
     </div>
   </div>
 );
@@ -187,52 +187,48 @@ const App: React.FC = () => {
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-4 sm:p-6 flex flex-col">
-      <header className="w-full max-w-screen-xl text-center mb-4 mx-auto">
-        <div className="flex justify-center items-center gap-4">
-          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-teal-500">
-            S O P Daily Tracker
+    <div className="min-h-screen bg-white text-gray-900 p-4 sm:p-6 flex flex-col items-center">
+      <header className="w-full max-w-screen-xl text-center mb-6">
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900">
+            SQP Daily Tracker
           </h1>
           {installPrompt && !isStandalone && (
             <button
               onClick={handleInstallClick}
-              className="flex items-center gap-2 bg-teal-600 hover:bg-teal-500 text-white font-semibold px-3 sm:px-4 py-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-teal-400 whitespace-nowrap"
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-3 py-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 whitespace-nowrap text-sm"
               title="Install App"
             >
-              <DownloadIcon className="w-5 h-5" />
+              <DownloadIcon className="w-4 h-4" />
               <span className="hidden sm:inline">Install App</span>
             </button>
           )}
         </div>
-        <p className="text-gray-400 mt-2">Visualize Safety, Quality & Production Metrics</p>
+        <p className="text-gray-600 mt-2 text-sm">Visualize Safety, Quality & Production Metrics</p>
       </header >
 
       <div className="w-full max-w-screen-xl mx-auto mb-4 px-4">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-gray-800/30 rounded-lg p-3">
+        <div className="flex flex-col md:flex-row items-center justify-center gap-6 bg-gray-100 rounded-lg p-3">
           <div className="flex items-center justify-center">
             <button
               onClick={() => handleMonthChange('prev')}
-              className="p-2 rounded-full hover:bg-gray-700 transition-colors"
+              className="p-2 rounded-full hover:bg-gray-200 transition-colors"
               aria-label="Previous month"
             >
-              <ChevronLeftIcon className="w-6 h-6" />
+              <ChevronLeftIcon className="w-6 h-6 text-gray-700" />
             </button>
-            <h2 className="text-xl font-semibold text-teal-300 w-48 text-center">{monthName}</h2>
+            <h2 className="text-xl font-semibold text-gray-800 w-48 text-center">{monthName}</h2>
             <button
               onClick={() => handleMonthChange('next')}
-              className="p-2 rounded-full hover:bg-gray-700 transition-colors"
+              className="p-2 rounded-full hover:bg-gray-200 transition-colors"
               aria-label="Next month"
             >
-              <ChevronRightIcon className="w-6 h-6" />
+              <ChevronRightIcon className="w-6 h-6 text-gray-700" />
             </button>
           </div>
 
-          <div className="hidden lg:flex">
+          <div className="flex">
             <StatusLegend />
-          </div>
-
-          <div className="w-full md:w-auto">
-            <ThresholdSettings thresholds={thresholds} onThresholdsChange={setThresholds} />
           </div>
         </div>
       </div>
@@ -248,8 +244,9 @@ const App: React.FC = () => {
           </div>
         )}
 
-        <main className="w-full flex-1 flex flex-col lg:flex-row justify-center items-stretch gap-6">
-          <div className="lg:w-1/3 flex">
+        {/* SQP Letters Container */}
+        <main className="w-full flex-1 flex justify-center items-start py-4">
+          <div className="grid grid-cols-3 gap-6 w-full max-w-[1400px] px-4">
             <LetterDisplay
               letter="S"
               data={dailyData}
@@ -258,18 +255,14 @@ const App: React.FC = () => {
               daysInMonth={daysInMonth}
               thresholds={thresholds}
             />
-          </div>
-          <div className="lg:w-1/3 flex">
             <LetterDisplay
-              letter="O"
+              letter="Q"
               data={dailyData}
               onDaySelect={handleDaySelect}
               selectedDay={selectedDay}
               daysInMonth={daysInMonth}
               thresholds={thresholds}
             />
-          </div>
-          <div className="lg:w-1/3 flex">
             <LetterDisplay
               letter="P"
               data={dailyData}
@@ -282,7 +275,6 @@ const App: React.FC = () => {
         </main>
       </div>
 
-
       <DataEntryModal
         isOpen={selectedDay !== null}
         onClose={handleCloseModal}
@@ -293,10 +285,10 @@ const App: React.FC = () => {
 
       <footer className="w-full mt-auto pt-6 text-gray-500 text-sm">
         <div className="max-w-screen-xl mx-auto flex justify-between items-center px-4">
-          <p>SOP Tracker by AI Studio</p>
+          <p>SQP Tracker by AI Studio</p>
           <div className="flex items-center gap-4">
             {showSaveConfirmation && (
-              <span className="text-cyan-400 animate-fade-in-out">
+              <span className="text-green-600 animate-fade-in-out">
                 ✓ Data Saved to Device
               </span>
             )}

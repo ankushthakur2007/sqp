@@ -1,7 +1,6 @@
 
-import React from 'react';
-import { DailyData, Letter, DataStatus, Thresholds } from '../types';
-import { ALL_P_COORDS, ALL_Q_COORDS, ALL_S_COORDS, ALL_O_COORDS } from '../constants';
+import React, { useRef, useEffect, useState } from 'react';
+import { DailyData, Letter, DataStatus, Thresholds, SafetyStatus } from '../types';
 import { calculateProductionStatus, calculateQualityStatus } from '../utils';
 
 interface LetterDisplayProps {
@@ -13,120 +12,162 @@ interface LetterDisplayProps {
   thresholds: Thresholds;
 }
 
-const DateHole: React.FC<{
-  day: number;
-  status: DataStatus;
-  isSelected: boolean;
-  onClick: (day: number) => void;
-  coords: { top: string; left: string };
-}> = ({ day, status, isSelected, onClick, coords }) => {
-  const baseClasses = "absolute w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-200 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800";
+interface DotPosition {
+  x: number;
+  y: number;
+}
 
-  const statusClasses = {
-    default: "bg-white text-black hover:bg-gray-200 focus:ring-cyan-500",
-    good: "bg-green-600 text-white hover:bg-green-500 focus:ring-green-400 shadow-lg shadow-green-900/50",
-    warning: "bg-yellow-500 text-white hover:bg-yellow-400 focus:ring-yellow-400 shadow-lg shadow-yellow-900/50",
-    alert: "bg-red-600 text-white hover:bg-red-500 focus:ring-red-400 shadow-lg shadow-red-900/50",
-  };
+export const LetterDisplay: React.FC<LetterDisplayProps> = ({ 
+  letter, 
+  data, 
+  onDaySelect, 
+  selectedDay, 
+  daysInMonth, 
+  thresholds 
+}) => {
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [dotPositions, setDotPositions] = useState<DotPosition[]>([]);
 
-  let stateClasses = statusClasses[status];
-
-  if (isSelected) {
-    stateClasses = "bg-cyan-500 text-white scale-125 ring-2 ring-offset-2 ring-offset-slate-300 ring-cyan-400 shadow-xl shadow-cyan-700/50";
-  }
-
-  return (
-    <button
-      onClick={() => onClick(day)}
-      className={`${baseClasses} ${stateClasses}`}
-      style={{ top: `calc(${coords.top} - 1.375rem)`, left: `calc(${coords.left} - 1.375rem)` }}
-      aria-label={`Select day ${day}`}
-    >
-      {day}
-    </button>
-  );
-};
-
-export const LetterDisplay: React.FC<LetterDisplayProps> = ({ letter, data, onDaySelect, selectedDay, daysInMonth, thresholds }) => {
-  let coords;
-  switch (letter) {
-    case 'S': coords = ALL_S_COORDS; break;
-    case 'O': coords = ALL_O_COORDS; break;
-    case 'P': coords = ALL_P_COORDS; break;
-    case 'Q': coords = ALL_Q_COORDS; break;
-    default: coords = ALL_P_COORDS;
-  }
-
-  const letterStyles = {
-    P: {
-      elements: [
-        <div key="p-stem" className="absolute top-0 left-[15%] w-[50%] h-full bg-blue-800 rounded-lg"></div>,
-        <div key="p-bowl" className="absolute top-0 left-[15%] w-[85%] h-[55%] bg-blue-800 rounded-tr-[60px] rounded-br-[60px]"></div>,
-        <div key="p-hole" className="absolute top-[15%] left-[60%] w-[30%] h-[25%] bg-slate-300 rounded-full"></div>
-      ]
+  // Define paths and dot counts for each letter
+  const letterConfig = {
+    S: {
+      fillPath: "M 140 80 C 60 40, 60 180, 140 160 C 220 140, 220 260, 140 240",
+      dotPath: "M 140 80 C 60 40, 60 180, 140 160 C 220 140, 220 260, 140 240",
+      count: Math.min(32, daysInMonth),
+      className: "s-letter-path",
+      title: "SAFETY"
     },
     Q: {
-      elements: [
-        <div key="q-bowl" className="w-full h-full absolute top-0 left-0 bg-green-800 rounded-full"></div>,
-        <div key="q-hole" className="absolute top-[25%] left-[25%] w-[50%] h-[50%] bg-slate-300 rounded-full"></div>,
-        <div key="q-tail" className="absolute bottom-[6%] right-[14%] w-16 h-24 bg-green-800 -rotate-45 transform origin-bottom-right rounded-sm"></div>,
-      ]
+      fillPath: "M 140 90 C 90 90, 60 120, 60 175 C 60 230, 90 260, 140 260 C 190 260, 220 230, 220 175 C 220 120, 190 90, 140 90 M 140 120 C 170 120, 190 140, 190 175 C 190 210, 170 230, 140 230 C 110 230, 90 210, 90 175 C 90 140, 110 120, 140 120 M 175 215 L 175 235 L 210 280 L 235 265 L 195 215 Z",
+      dotPath: "M 140 90 C 190 90, 220 120, 220 175 C 220 230, 190 260, 140 260 C 90 260, 60 230, 60 175 C 60 120, 90 90, 140 90 M 175 215 L 210 280",
+      count: Math.min(40, daysInMonth),
+      className: "q-letter-path",
+      title: "QUALITY"
     },
     O: {
-      elements: [
-        <div key="o-bowl" className="w-full h-full absolute top-0 left-0 bg-green-800 rounded-full"></div>,
-        <div key="o-hole" className="absolute top-[25%] left-[25%] w-[50%] h-[50%] bg-slate-300 rounded-full"></div>,
-      ]
+      fillPath: "M 140 90 C 90 90, 60 120, 60 175 C 60 230, 90 260, 140 260 C 190 260, 220 230, 220 175 C 220 120, 190 90, 140 90 M 140 120 C 170 120, 190 140, 190 175 C 190 210, 170 230, 140 230 C 110 230, 90 210, 90 175 C 90 140, 110 120, 140 120",
+      dotPath: "M 140 90 C 190 90, 220 120, 220 175 C 220 230, 190 260, 140 260 C 90 260, 60 230, 60 175 C 60 120, 90 90, 140 90",
+      count: Math.min(40, daysInMonth),
+      className: "q-letter-path",
+      title: "QUALITY"
     },
-    S: {
-      elements: [
-        <div key="s-top" className="absolute top-[5%] left-[10%] w-[80%] h-[20%] bg-teal-800 rounded-full"></div>,
-        <div key="s-mid" className="absolute top-[40%] left-[10%] w-[80%] h-[20%] bg-teal-800 rounded-full transform -rotate-12"></div>,
-        <div key="s-bot" className="absolute bottom-[5%] left-[10%] w-[80%] h-[20%] bg-teal-800 rounded-full"></div>,
-        <div key="s-c1" className="absolute top-[15%] left-[10%] w-[20%] h-[35%] bg-teal-800 rounded-full"></div>,
-        <div key="s-c2" className="absolute bottom-[15%] right-[10%] w-[20%] h-[35%] bg-teal-800 rounded-full"></div>,
-      ]
+    P: {
+      fillPath: "M 90 280 L 90 90 L 160 90 C 200 90, 230 110, 230 150 C 230 190, 200 210, 160 210 L 120 210 L 120 280 Z M 120 120 L 120 180 L 160 180 C 180 180, 200 170, 200 150 C 200 130, 180 120, 160 120 Z",
+      dotPath: "M 90 280 L 90 90 L 160 90 C 200 90, 230 110, 230 150 C 230 190, 200 210, 160 210 L 120 210 L 120 280",
+      count: Math.min(28, daysInMonth),
+      className: "p-letter-path",
+      title: "PRODUCTION"
     }
   };
 
-  let title = "UNKNOWN";
-  if (letter === 'P') title = "PRODUCTION";
-  else if (letter === 'Q' || letter === 'O') title = "QUALITY";
-  else if (letter === 'S') title = "SAFETY";
+  const config = letterConfig[letter];
+
+  // Calculate dot positions along the SVG path
+  useEffect(() => {
+    if (!svgRef.current) return;
+
+    const pathElement = svgRef.current.querySelector('.dot-path') as SVGPathElement;
+    if (!pathElement) return;
+
+    const length = pathElement.getTotalLength();
+    const positions: DotPosition[] = [];
+
+    for (let i = 0; i < config.count; i++) {
+      const point = pathElement.getPointAtLength((length / config.count) * i);
+      positions.push({ x: point.x, y: point.y });
+    }
+
+    setDotPositions(positions);
+  }, [config.count]);
+
+  // Get status for a day
+  const getStatus = (day: number): DataStatus | SafetyStatus | 'no-data' => {
+    const dayData = data[day];
+    if (!dayData) return 'no-data';
+
+    if (letter === 'S') {
+      return dayData.safetyStatus || 'safe';
+    } else if (letter === 'P') {
+      return calculateProductionStatus(dayData.production, thresholds);
+    } else if (letter === 'Q' || letter === 'O') {
+      return calculateQualityStatus(dayData.quality, thresholds);
+    }
+    return 'no-data';
+  };
+
+  const handleDotClick = (day: number) => {
+    onDaySelect(day);
+  };
 
   return (
-    <div className="bg-slate-300 rounded-xl p-4 shadow-lg w-full h-full flex flex-col">
-      <h2 className="text-center text-xl font-bold tracking-wider text-gray-800 border-b-2 border-gray-400 pb-2 mb-4">{title}</h2>
-      <div className="w-full flex-1 relative">
-        {letterStyles[letter].elements}
-        {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
-          const dayData = data[day];
-          let status: DataStatus = 'default';
+    <div className="bg-white rounded-lg p-4 shadow-lg w-full flex flex-col border border-gray-200 hover:shadow-xl transition-shadow">
+      <h2 className="text-center text-base font-bold tracking-wider pb-2 mb-3" 
+          style={{
+            color: letter === 'S' ? '#1f487c' : letter === 'Q' || letter === 'O' ? '#c42727' : '#2f8e3c',
+            borderBottom: '2px solid',
+            borderColor: letter === 'S' ? '#1f487c' : letter === 'Q' || letter === 'O' ? '#c42727' : '#2f8e3c'
+          }}>
+        {config.title}
+      </h2>
+      <div className="w-full flex items-center justify-center" style={{ height: '250px' }}>
+        <svg ref={svgRef} viewBox="0 0 280 350" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
+          {/* Filled letter shape */}
+          <path
+            className={`letter-path ${config.className}`}
+            d={config.fillPath}
+          />
+          
+          {/* Invisible path for dot positioning */}
+          <path
+            className="dot-path"
+            d={config.dotPath}
+            fill="none"
+            stroke="none"
+          />
 
-          if (letter === 'P') {
-            status = calculateProductionStatus(dayData, thresholds);
-          } else if (letter === 'Q' || letter === 'O') {
-            status = calculateQualityStatus(dayData, thresholds);
-          } else if (letter === 'S') {
-            // Safety logic
-            if (!dayData) status = 'default';
-            else if (dayData.safetyStatus === 'safe') status = 'good';
-            else if (dayData.safetyStatus === 'recordable') status = 'warning';
-            else if (dayData.safetyStatus === 'lost-time') status = 'alert';
-            else status = 'default';
-          }
+          {/* Dots along the path */}
+          {dotPositions.map((pos, index) => {
+            const day = index + 1;
+            if (day > daysInMonth) return null;
+            
+            const status = getStatus(day);
+            const isSelected = selectedDay === day;
+            
+            let dotClass = 'dot';
+            if (status === 'good') dotClass += ' dot-good';
+            else if (status === 'warning') dotClass += ' dot-warning';
+            else if (status === 'alert') dotClass += ' dot-alert';
+            else if (status === 'safe') dotClass += ' dot-safe';
+            else if (status === 'recordable') dotClass += ' dot-recordable';
+            else if (status === 'lost-time') dotClass += ' dot-lost-time';
+            else dotClass += ' dot-no-data';
+            
+            if (isSelected) dotClass += ' dot-selected';
 
-          return (
-            <DateHole
-              key={day}
-              day={day}
-              status={status}
-              isSelected={selectedDay === day}
-              onClick={onDaySelect}
-              coords={coords[day - 1] || { top: '0%', left: '0%' }}
-            />
-          )
-        })}
+            return (
+              <g
+                key={day}
+                className={dotClass}
+                onClick={() => handleDotClick(day)}
+                style={{ cursor: 'pointer' }}
+              >
+                <circle
+                  cx={pos.x}
+                  cy={pos.y}
+                  r={14}
+                  className="dot-circle"
+                />
+                <text
+                  x={pos.x}
+                  y={pos.y + 0.5}
+                  className="dot-number"
+                >
+                  {day.toString().padStart(2, '0')}
+                </text>
+              </g>
+            );
+          })}
+        </svg>
       </div>
     </div>
   );
