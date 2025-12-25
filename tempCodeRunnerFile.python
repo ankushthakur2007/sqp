@@ -1,0 +1,4 @@
+import re
+text = input("Enter text: ")
+emails = re.findall(r"[\w.]+@[\w.]+", text)
+print("Emails found:", emails)
