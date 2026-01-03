@@ -3,6 +3,11 @@
    Safety, Quality, Production Tracking System
    ============================================ */
 
+/* Import Tailwind CSS */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* === BASE RESET & TYPOGRAPHY === */
 * {
   box-sizing: border-box;
@@ -11,7 +16,7 @@
 }
 
 body {
-  background: linear-gradient(135deg, #f9fafb 0%, #e5e7eb 100%);
+  background: #ffffff;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -28,15 +33,15 @@ body {
 
 /* Letter Colors - Brand Identity */
 .s-letter-path { 
-  fill: #1f487c; /* Navy Blue - Safety */
+  fill: #475569; /* Dark Gray - Safety */
 }
 
 .q-letter-path { 
-  fill: #c42727; /* Deep Red - Quality */
+  fill: #15803d; /* Dark Green - Quality */
 }
 
 .p-letter-path { 
-  fill: #2f8e3c; /* Forest Green - Production */
+  fill: #1e40af; /* Dark Blue - Production */
 }
 
 /* === INTERACTIVE DOTS (DATE MARKERS) === */
@@ -56,24 +61,30 @@ body {
 
 .dot-circle {
   fill: white;
-  stroke: #4b5563;
+  stroke: #334155;
   stroke-width: 2.5;
   transition: all 0.2s ease;
 }
 
 .dot:hover .dot-circle {
-  stroke-width: 3.5;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25));
+  stroke-width: 4;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5)) brightness(1.1);
+  transform-origin: center;
+}
+
+.dot:hover .dot-number {
+  font-weight: 900;
+  font-size: 13px;
 }
 
 .dot-number {
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 800;
   text-anchor: middle;
   dominant-baseline: middle;
   pointer-events: none;
   user-select: none;
-  fill: #1f2937;
+  fill: #1e293b;
   font-family: 'Courier New', monospace;
 }
 
@@ -151,19 +162,19 @@ body {
 
 /* No Data - Gray */
 .dot-no-data .dot-circle {
-  fill: white;
-  stroke: #9ca3af;
-  stroke-width: 2;
+  fill: #e2e8f0;
+  stroke: #475569;
+  stroke-width: 3;
 }
 
 .dot-no-data .dot-number {
-  fill: #6b7280;
+  fill: #334155;
 }
 
 /* Selected Dot - Cyan Highlight */
 .dot-selected .dot-circle {
   stroke: #06b6d4;
-  stroke-width: 5;
+  stroke-width: 4;
   filter: drop-shadow(0 0 12px rgba(6, 182, 212, 0.7));
 }
 
@@ -227,18 +238,18 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f3f4f6;
+  background: #1e293b;
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #9ca3af 0%, #6b7280 100%);
+  background: linear-gradient(180deg, #475569 0%, #334155 100%);
   border-radius: 5px;
-  border: 2px solid #f3f4f6;
+  border: 2px solid #1e293b;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #6b7280 0%, #4b5563 100%);
+  background: linear-gradient(180deg, #64748b 0%, #475569 100%);
 }
 
 /* === FOCUS STYLES (ACCESSIBILITY) === */
@@ -357,50 +368,74 @@ input[type="range"] {
   cursor: pointer;
 }
 
-input[type="range"]::-webkit-slider-track {
-  background: #4b5563;
-  height: 8px;
-  border-radius: 4px;
-}
-
-input[type="range"]::-webkit-slider-thumb {
+input[type="range"].range-slider {
   -webkit-appearance: none;
   appearance: none;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #06b6d4;
+  background: transparent;
   cursor: pointer;
+  position: relative;
+  width: 100%;
+  height: 6px;
+  --range-progress: 50%;
+}
+
+input[type="range"].range-slider::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, #0ea5e9 0%, #0ea5e9 var(--range-progress), #cbd5e1 var(--range-progress), #cbd5e1 100%);
+  height: 6px;
+  border-radius: 3px;
+}
+
+input[type="range"].range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #0ea5e9;
+  cursor: grab;
   margin-top: -6px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   transition: all 0.2s ease;
+  border: 2px solid #ffffff;
+  position: relative;
 }
 
-input[type="range"]::-webkit-slider-thumb:hover {
-  background: #0891b2;
-  transform: scale(1.1);
+input[type="range"].range-slider::-webkit-slider-thumb:hover {
+  background: #0284c7;
+  transform: scale(1.15);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
 }
 
-input[type="range"]::-moz-range-track {
-  background: #4b5563;
-  height: 8px;
-  border-radius: 4px;
+input[type="range"].range-slider::-webkit-slider-thumb:active {
+  cursor: grabbing;
 }
 
-input[type="range"]::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #06b6d4;
-  cursor: pointer;
+input[type="range"].range-slider::-moz-range-track {
+  background: linear-gradient(to right, #0ea5e9 0%, #0ea5e9 var(--range-progress), #cbd5e1 var(--range-progress), #cbd5e1 100%);
+  height: 6px;
+  border-radius: 3px;
   border: none;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+input[type="range"].range-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #0ea5e9;
+  cursor: grab;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   transition: all 0.2s ease;
 }
 
-input[type="range"]::-moz-range-thumb:hover {
-  background: #0891b2;
-  transform: scale(1.1);
+input[type="range"].range-slider::-moz-range-thumb:hover {
+  background: #0284c7;
+  transform: scale(1.15);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+}
+
+input[type="range"].range-slider::-moz-range-thumb:active {
+  cursor: grabbing;
 }
 
 /* === NUMBER INPUT STYLING === */
@@ -438,8 +473,8 @@ input[type="radio"] {
 /* === DARK MODE SUPPORT (Optional Enhancement) === */
 @media (prefers-color-scheme: dark) {
   body {
-    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-    color: #f9fafb;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: #f1f5f9;
   }
 }
 

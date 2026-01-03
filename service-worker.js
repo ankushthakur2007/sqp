@@ -12,13 +12,9 @@ const URLS_TO_CACHE = [
   '/components/LetterDisplay.tsx',
   '/components/SelectionSummary.tsx',
   '/components/ThresholdSettings.tsx',
+  '/components/SafetyCrossCalendar.tsx',
   '/manifest.json',
-  '/vite.svg',
-  // External assets
-  'https://cdn.tailwindcss.com',
-  'https://aistudiocdn.com/react@^19.2.0',
-  'https://aistudiocdn.com/react-dom@^19.2.0/client',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
+  '/index.css'
 ];
 
 self.addEventListener('install', event => {

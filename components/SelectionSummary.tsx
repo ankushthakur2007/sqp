@@ -24,35 +24,35 @@ export const SelectionSummary: React.FC<SelectionSummaryProps> = ({ selectedDay,
   const currentQualityStatus = statusInfo[qualityStatus];
 
   return (
-    <div className="w-full p-4 bg-gray-800/60 rounded-lg shadow-lg border border-gray-700 animate-fade-in-down">
+    <div className="w-full p-4 bg-gray-800 rounded-lg shadow-xl border-2 border-gray-900 animate-fade-in-down">
       <div className="flex flex-wrap justify-between items-center gap-2">
-        <h3 className="text-xl font-bold text-teal-300">
+        <h3 className="text-xl font-bold text-white">
           Summary for Day {selectedDay}
         </h3>
       </div>
       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-gray-700/50 p-4 rounded-md">
+        <div className="bg-gray-700 p-4 rounded-md border-2 border-gray-900">
             <div className="flex justify-between items-center mb-1">
-                <p className="text-sm text-gray-400">Production</p>
+                <p className="text-sm text-gray-300 font-semibold">Production</p>
                 <div className={`flex items-center gap-2 px-2 py-0.5 rounded-full text-xs font-semibold ${currentProductionStatus.color}/20 ${currentProductionStatus.textColor}`}>
                     <span className={`w-2 h-2 rounded-full ${currentProductionStatus.color}`}></span>
                     <span>{currentProductionStatus.text}</span>
                 </div>
             </div>
             <p className="text-3xl font-bold text-white text-center pt-2">
-                {data?.production?.toLocaleString() ?? <span className="text-gray-500">N/A</span>}
+                {data?.production?.toLocaleString() ?? <span className="text-gray-400">N/A</span>}
             </p>
         </div>
-        <div className="bg-gray-700/50 p-4 rounded-md">
+        <div className="bg-gray-700 p-4 rounded-md border-2 border-gray-900">
              <div className="flex justify-between items-center mb-1">
-                <p className="text-sm text-gray-400">Quality</p>
+                <p className="text-sm text-gray-300 font-semibold">Quality</p>
                  <div className={`flex items-center gap-2 px-2 py-0.5 rounded-full text-xs font-semibold ${currentQualityStatus.color}/20 ${currentQualityStatus.textColor}`}>
                     <span className={`w-2 h-2 rounded-full ${currentQualityStatus.color}`}></span>
                     <span>{currentQualityStatus.text}</span>
                 </div>
             </div>
             <p className="text-3xl font-bold text-white text-center pt-2">
-                {data?.quality !== null && data?.quality !== undefined ? `${data.quality}%` : <span className="text-gray-500">N/A</span>}
+                {data?.quality !== null && data?.quality !== undefined ? `${data.quality}%` : <span className="text-gray-400">N/A</span>}
             </p>
         </div>
       </div>

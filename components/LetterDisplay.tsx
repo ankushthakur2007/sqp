@@ -2,6 +2,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { DailyData, Letter, DataStatus, Thresholds, SafetyStatus } from '../types';
 import { calculateProductionStatus, calculateQualityStatus } from '../utils';
+import { SafetyCrossCalendar } from './SafetyCrossCalendar';
 
 interface LetterDisplayProps {
   letter: Letter;
@@ -38,23 +39,16 @@ export const LetterDisplay: React.FC<LetterDisplayProps> = ({
       title: "SAFETY"
     },
     Q: {
-      fillPath: "M 140 90 C 90 90, 60 120, 60 175 C 60 230, 90 260, 140 260 C 190 260, 220 230, 220 175 C 220 120, 190 90, 140 90 M 140 120 C 170 120, 190 140, 190 175 C 190 210, 170 230, 140 230 C 110 230, 90 210, 90 175 C 90 140, 110 120, 140 120 M 175 215 L 175 235 L 210 280 L 235 265 L 195 215 Z",
-      dotPath: "M 140 90 C 190 90, 220 120, 220 175 C 220 230, 190 260, 140 260 C 90 260, 60 230, 60 175 C 60 120, 90 90, 140 90 M 175 215 L 210 280",
-      count: Math.min(40, daysInMonth),
-      className: "q-letter-path",
-      title: "QUALITY"
-    },
-    O: {
-      fillPath: "M 140 90 C 90 90, 60 120, 60 175 C 60 230, 90 260, 140 260 C 190 260, 220 230, 220 175 C 220 120, 190 90, 140 90 M 140 120 C 170 120, 190 140, 190 175 C 190 210, 170 230, 140 230 C 110 230, 90 210, 90 175 C 90 140, 110 120, 140 120",
-      dotPath: "M 140 90 C 190 90, 220 120, 220 175 C 220 230, 190 260, 140 260 C 90 260, 60 230, 60 175 C 60 120, 90 90, 140 90",
-      count: Math.min(40, daysInMonth),
+      fillPath: "M 140 45 C 55 45, 15 95, 15 175 C 15 255, 55 305, 140 305 C 225 305, 265 255, 265 175 C 265 95, 225 45, 140 45 M 140 85 C 200 85, 230 120, 230 175 C 230 230, 200 265, 140 265 C 80 265, 50 230, 50 175 C 50 120, 80 85, 140 85 M 195 235 L 200 255 L 235 310 L 260 295 L 220 235 Z",
+      dotPath: "M 140 60 C 215 60, 250 100, 250 175 C 250 250, 215 290, 140 290 C 65 290, 30 250, 30 175 C 30 100, 65 60, 140 60",
+      count: daysInMonth,
       className: "q-letter-path",
       title: "QUALITY"
     },
     P: {
-      fillPath: "M 90 280 L 90 90 L 160 90 C 200 90, 230 110, 230 150 C 230 190, 200 210, 160 210 L 120 210 L 120 280 Z M 120 120 L 120 180 L 160 180 C 180 180, 200 170, 200 150 C 200 130, 180 120, 160 120 Z",
-      dotPath: "M 90 280 L 90 90 L 160 90 C 200 90, 230 110, 230 150 C 230 190, 200 210, 160 210 L 120 210 L 120 280",
-      count: Math.min(28, daysInMonth),
+      fillPath: "M 40 320 L 40 45 L 210 45 C 275 45, 300 75, 300 145 C 300 215, 275 245, 210 245 L 95 245 L 95 320 Z M 95 85 L 95 205 L 210 205 C 245 205, 270 185, 270 145 C 270 105, 245 85, 210 85 Z",
+      dotPath: "M 60 310 L 60 65 L 210 65 C 262 65, 285 88, 285 145 C 285 202, 262 225, 210 225 L 85 225 L 85 310",
+      count: daysInMonth,
       className: "p-letter-path",
       title: "PRODUCTION"
     }
@@ -71,9 +65,12 @@ export const LetterDisplay: React.FC<LetterDisplayProps> = ({
 
     const length = pathElement.getTotalLength();
     const positions: DotPosition[] = [];
+    const actualCount = Math.min(config.count, daysInMonth);
 
-    for (let i = 0; i < config.count; i++) {
-      const point = pathElement.getPointAtLength((length / config.count) * i);
+    for (let i = 0; i < actualCount; i++) {
+      // Distribute evenly along the entire path
+      const distance = (length * (i + 0.5)) / actualCount;
+      const point = pathElement.getPointAtLength(distance);
       positions.push({ x: point.x, y: point.y });
     }
 
@@ -85,12 +82,23 @@ export const LetterDisplay: React.FC<LetterDisplayProps> = ({
     const dayData = data[day];
     if (!dayData) return 'no-data';
 
+    // All letters should reflect Safety status if data exists
     if (letter === 'S') {
       return dayData.safetyStatus || 'safe';
-    } else if (letter === 'P') {
-      return calculateProductionStatus(dayData.production, thresholds);
-    } else if (letter === 'Q' || letter === 'O') {
-      return calculateQualityStatus(dayData.quality, thresholds);
+    } else {
+      // For Q and P, use Safety status if it exists
+      const safetyStatus = dayData.safetyStatus;
+      if (safetyStatus === 'safe') return 'good';
+      if (safetyStatus === 'recordable') return 'warning';
+      if (safetyStatus === 'lost-time') return 'alert';
+      
+      // If Safety status doesn't exist but P or Q data exists, show as good
+      if (letter === 'P' && (dayData.production !== null && dayData.production !== undefined)) {
+        return 'good';
+      }
+      if ((letter === 'Q' || letter === 'O') && (dayData.quality !== null && dayData.quality !== undefined)) {
+        return 'good';
+      }
     }
     return 'no-data';
   };
@@ -99,18 +107,30 @@ export const LetterDisplay: React.FC<LetterDisplayProps> = ({
     onDaySelect(day);
   };
 
+  // Use calendar grid for Safety
+  if (letter === 'S') {
+    return (
+      <SafetyCrossCalendar
+        daysInMonth={daysInMonth}
+        data={data}
+        onDaySelect={onDaySelect}
+        selectedDay={selectedDay}
+      />
+    );
+  }
+
   return (
-    <div className="bg-white rounded-lg p-4 shadow-lg w-full flex flex-col border border-gray-200 hover:shadow-xl transition-shadow">
-      <h2 className="text-center text-base font-bold tracking-wider pb-2 mb-3" 
+    <div className="bg-gray-800 rounded-lg p-6 shadow-xl w-full flex flex-col border-2 border-gray-900 hover:shadow-2xl transition-shadow">
+      <h2 className="text-center text-lg font-bold tracking-wider pb-2 mb-3" 
           style={{
-            color: letter === 'S' ? '#1f487c' : letter === 'Q' || letter === 'O' ? '#c42727' : '#2f8e3c',
-            borderBottom: '2px solid',
-            borderColor: letter === 'S' ? '#1f487c' : letter === 'Q' || letter === 'O' ? '#c42727' : '#2f8e3c'
+            color: '#ffffff',
+            borderBottom: '3px solid',
+            borderColor: letter === 'S' ? '#64748b' : letter === 'Q' || letter === 'O' ? '#15803d' : '#1e40af'
           }}>
         {config.title}
       </h2>
-      <div className="w-full flex items-center justify-center" style={{ height: '250px' }}>
-        <svg ref={svgRef} viewBox="0 0 280 350" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
+      <div className="w-full flex items-center justify-center" style={{ height: '400px' }}>
+        <svg ref={svgRef} viewBox="0 20 300 320" className="w-full h-full max-h-[450px]" preserveAspectRatio="xMidYMid meet">
           {/* Filled letter shape */}
           <path
             className={`letter-path ${config.className}`}
@@ -130,10 +150,13 @@ export const LetterDisplay: React.FC<LetterDisplayProps> = ({
             const day = index + 1;
             if (day > daysInMonth) return null;
             
+            const dayData = data[day];
             const status = getStatus(day);
             const isSelected = selectedDay === day;
             
             let dotClass = 'dot';
+            
+            // Show colors based on status calculation
             if (status === 'good') dotClass += ' dot-good';
             else if (status === 'warning') dotClass += ' dot-warning';
             else if (status === 'alert') dotClass += ' dot-alert';
@@ -144,6 +167,11 @@ export const LetterDisplay: React.FC<LetterDisplayProps> = ({
             
             if (isSelected) dotClass += ' dot-selected';
 
+            // Create tooltip content
+            const tooltipContent = dayData 
+              ? `Day ${day}\nSafety: ${dayData.safetyStatus || 'N/A'}\nProduction: ${dayData.production !== null ? dayData.production.toLocaleString() : 'N/A'}\nQuality: ${dayData.quality !== null ? dayData.quality + '%' : 'N/A'}`
+              : `Day ${day}\nNo data recorded`;
+
             return (
               <g
                 key={day}
@@ -151,10 +179,11 @@ export const LetterDisplay: React.FC<LetterDisplayProps> = ({
                 onClick={() => handleDotClick(day)}
                 style={{ cursor: 'pointer' }}
               >
+                <title>{tooltipContent}</title>
                 <circle
                   cx={pos.x}
                   cy={pos.y}
-                  r={14}
+                  r={12}
                   className="dot-circle"
                 />
                 <text

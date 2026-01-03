@@ -18,7 +18,20 @@ const DAY_COORDINATES: { [day: number]: { row: number, col: number } } = {
   21: { row: 5, col: 3 }, 22: { row: 5, col: 4 }, 23: { row: 5, col: 5 },
   24: { row: 6, col: 3 }, 25: { row: 6, col: 4 }, 26: { row: 6, col: 5 },
   27: { row: 7, col: 3 }, 28: { row: 7, col: 4 }, 29: { row: 7, col: 5 },
-  30: { row: 8, col: 3 }, 31: { row: 8, col: 4 },
+  30: { row: 8, col: 3 }, 31: { row: 8, col: 5 },
+};
+
+// Get blank box positions for symmetry based on days in month
+const getBlankPositions = (daysInMonth: number): Array<{ row: number, col: number }> => {
+  if (daysInMonth === 31) {
+    return [{ row: 8, col: 4 }]; // 30 - blank - 31
+  } else if (daysInMonth === 30) {
+    return [{ row: 8, col: 4 }, { row: 8, col: 5 }]; // 30 in col 3, blanks in 4 & 5
+  } else if (daysInMonth === 29) {
+    return [{ row: 8, col: 3 }, { row: 8, col: 4 }, { row: 8, col: 5 }]; // All blank row 8
+  } else { // 28 days
+    return [{ row: 7, col: 5 }, { row: 8, col: 3 }, { row: 8, col: 4 }, { row: 8, col: 5 }]; // blank after 28 + all blank row 8
+  }
 };
 
 type CellStatus = SafetyStatus | 'no-data';
@@ -41,16 +54,21 @@ const DayCell: React.FC<{
 
     const status = getStatus();
 
+    // Create tooltip content
+    const tooltipContent = dayData 
+      ? `Day ${day}\nSafety: ${dayData.safetyStatus || 'N/A'}\nProduction: ${dayData.production !== null ? dayData.production.toLocaleString() : 'N/A'}\nQuality: ${dayData.quality !== null ? dayData.quality + '%' : 'N/A'}`
+      : `Day ${day}\nNo data recorded`;
+
     const statusClasses: Record<CellStatus, string> = {
-      'safe': 'bg-green-600 text-white hover:bg-green-500 focus:ring-green-400',
-      'recordable': 'bg-yellow-500 text-white hover:bg-yellow-400 focus:ring-yellow-400',
-      'lost-time': 'bg-red-600 text-white hover:bg-red-500 focus:ring-red-400',
-      'no-data': 'bg-white text-black hover:bg-gray-200 focus:ring-cyan-500',
+      'safe': 'bg-green-700 text-white hover:bg-green-600 focus:ring-green-500 border-2 border-green-900',
+      'recordable': 'bg-yellow-500 text-gray-900 hover:bg-yellow-400 focus:ring-yellow-500 border-2 border-yellow-700',
+      'lost-time': 'bg-red-700 text-white hover:bg-red-600 focus:ring-red-500 border-2 border-red-900',
+      'no-data': 'bg-gray-400 text-gray-800 hover:bg-gray-300 focus:ring-gray-500 border-2 border-gray-600',
     };
     
-    const cellClasses = `w-full aspect-square flex items-center justify-center rounded-md text-sm font-bold transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-300 ${statusClasses[status]}`;
+    const cellClasses = `w-full aspect-square flex items-center justify-center rounded-md text-base font-extrabold transition-all duration-200 transform hover:scale-110 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 ${statusClasses[status]}`;
     
-    const selectedClasses = isSelected ? "ring-2 ring-offset-2 ring-offset-slate-300 ring-cyan-400 scale-110" : "";
+    const selectedClasses = isSelected ? "ring-4 ring-offset-2 ring-offset-gray-800 ring-blue-500 scale-110" : "";
 
     return (
         <button 
@@ -58,6 +76,7 @@ const DayCell: React.FC<{
             className={`${cellClasses} ${selectedClasses}`}
             style={{ gridRowStart: coords.row, gridColumnStart: coords.col }}
             aria-label={`Day ${day}`}
+            title={tooltipContent}
         >
             {day}
         </button>
@@ -66,8 +85,8 @@ const DayCell: React.FC<{
 
 export const SafetyCrossCalendar: React.FC<SafetyCrossCalendarProps> = ({ daysInMonth, data, onDaySelect, selectedDay }) => {
     return (
-        <div className="bg-slate-300 rounded-xl p-4 shadow-lg w-full h-full flex flex-col">
-            <h2 className="text-center text-xl font-bold tracking-wider text-gray-800 border-b-2 border-gray-400 pb-2 mb-4">SAFETY</h2>
+        <div className="bg-gray-800 rounded-lg p-6 shadow-xl w-full h-full flex flex-col border-2 border-gray-900">
+            <h2 className="text-center text-lg font-bold tracking-wider text-white border-b-3 border-gray-600 pb-2 mb-4">SAFETY</h2>
             <div className="grid grid-cols-7 grid-rows-8 gap-1.5 sm:gap-2 flex-1">
                 {Array.from({ length: 31 }, (_, i) => i + 1).map(day => {
                     if (day > daysInMonth) return null;
@@ -85,6 +104,15 @@ export const SafetyCrossCalendar: React.FC<SafetyCrossCalendarProps> = ({ daysIn
                         />
                     );
                 })}
+                {/* Blank boxes for symmetry */}
+                {getBlankPositions(daysInMonth).map((pos, index) => (
+                    <div 
+                        key={`blank-${pos.row}-${pos.col}`}
+                        className="w-full aspect-square flex items-center justify-center rounded-md text-base font-extrabold transition-all duration-200 bg-gray-400 text-gray-800 border-2 border-gray-600"
+                        style={{ gridRowStart: pos.row, gridColumnStart: pos.col }}
+                        aria-hidden="true"
+                    />
+                ))}
             </div>
         </div>
     );

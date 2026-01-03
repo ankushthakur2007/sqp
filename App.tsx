@@ -9,22 +9,22 @@ import { SelectionSummary } from './components/SelectionSummary';
 
 
 const StatusLegend: React.FC = () => (
-  <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-gray-600" role="legend">
+  <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-gray-700 font-semibold" role="legend">
     <div className="flex items-center gap-2" title="Metric is at or above the 'Good' threshold">
-      <span className="w-3 h-3 rounded-full bg-green-500 border-2 border-green-800"></span>
+      <span className="w-3 h-3 rounded-full bg-green-600 border-2 border-green-800"></span>
       <span>Good</span>
     </div>
     <div className="flex items-center gap-2" title="Metric is between 'Good' and 'Alert' thresholds">
-      <span className="w-3 h-3 rounded-full bg-yellow-500 border-2 border-yellow-800"></span>
+      <span className="w-3 h-3 rounded-full bg-yellow-500 border-2 border-yellow-700"></span>
       <span>Warning</span>
     </div>
     <div className="flex items-center gap-2" title="Metric is below the 'Alert' threshold">
-      <span className="w-3 h-3 rounded-full bg-red-500 border-2 border-red-900"></span>
+      <span className="w-3 h-3 rounded-full bg-red-600 border-2 border-red-800"></span>
       <span>Alert</span>
     </div>
     <div className="flex items-center gap-2">
-      <span className="w-3 h-3 rounded-full bg-white border-2 border-gray-400"></span>
-      <span className="text-gray-500">No Data</span>
+      <span className="w-3 h-3 rounded-full bg-gray-300 border-2 border-gray-500"></span>
+      <span className="text-gray-600">No Data</span>
     </div>
   </div>
 );
@@ -77,6 +77,9 @@ const App: React.FC = () => {
     const startDate = new Date(year, month, 1).toISOString().split('T')[0];
     const endDate = new Date(year, month + 1, 0).toISOString().split('T')[0];
 
+    console.log('🔍 Fetching data from Supabase...');
+    console.log('Date range:', startDate, 'to', endDate);
+
     const { data, error } = await supabase
       .from('daily_entries')
       .select('*')
@@ -84,9 +87,13 @@ const App: React.FC = () => {
       .lte('date', endDate);
 
     if (error) {
-      console.error('Error fetching data:', error);
+      console.error('❌ Supabase Error:', error);
       return;
     }
+
+    console.log('✅ Supabase connected successfully!');
+    console.log(`📊 Fetched ${data?.length || 0} records for ${monthName}`);
+    console.log('Data:', data);
 
     const newDailyData: Record<number, DailyData> = {};
     data?.forEach((entry: any) => {
@@ -188,11 +195,21 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white text-gray-900 p-4 sm:p-6 flex flex-col items-center">
-      <header className="w-full max-w-screen-xl text-center mb-6">
-        <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900">
-            SQP Daily Tracker
-          </h1>
+      <header className="w-full max-w-screen-xl">
+        <div className="flex flex-col sm:flex-row justify-between items-center">
+          <div className="flex items-center gap-4">
+            <img 
+              src="/gna-logo.png" 
+              alt="GNA Axles" 
+              className="h-25 sm:h-40 w-auto object-contain"
+            />
+          </div>
+          <div className="flex flex-col items-center flex-1">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900">
+              S Q P Daily Tracker
+            </h1>
+            <p className="text-gray-600 text-sm font-semibold">Visualize Safety, Quality & Production Metrics</p>
+          </div>
           {installPrompt && !isStandalone && (
             <button
               onClick={handleInstallClick}
@@ -204,31 +221,37 @@ const App: React.FC = () => {
             </button>
           )}
         </div>
-        <p className="text-gray-600 mt-2 text-sm">Visualize Safety, Quality & Production Metrics</p>
       </header >
 
-      <div className="w-full max-w-screen-xl mx-auto mb-4 px-4">
-        <div className="flex flex-col md:flex-row items-center justify-center gap-6 bg-gray-100 rounded-lg p-3">
+      <div className="w-full max-w-screen-xl mx-auto px-4">
+        <div className="flex flex-col md:flex-row items-center justify-center gap-6 bg-gray-100 rounded-lg p-2 border border-gray-300">
           <div className="flex items-center justify-center">
             <button
               onClick={() => handleMonthChange('prev')}
               className="p-2 rounded-full hover:bg-gray-200 transition-colors"
               aria-label="Previous month"
             >
-              <ChevronLeftIcon className="w-6 h-6 text-gray-700" />
+              <ChevronLeftIcon className="w-6 h-6 text-gray-800" />
             </button>
-            <h2 className="text-xl font-semibold text-gray-800 w-48 text-center">{monthName}</h2>
+            <h2 className="text-xl font-semibold text-gray-900 w-48 text-center">{monthName}</h2>
             <button
               onClick={() => handleMonthChange('next')}
               className="p-2 rounded-full hover:bg-gray-200 transition-colors"
               aria-label="Next month"
             >
-              <ChevronRightIcon className="w-6 h-6 text-gray-700" />
+              <ChevronRightIcon className="w-6 h-6 text-gray-800" />
             </button>
           </div>
 
-          <div className="flex">
+          <div className="flex gap-4 items-center">
             <StatusLegend />
+          </div>
+          
+          <div className="flex">
+            <ThresholdSettings 
+              thresholds={thresholds} 
+              onThresholdsChange={setThresholds} 
+            />
           </div>
         </div>
       </div>
@@ -245,8 +268,8 @@ const App: React.FC = () => {
         )}
 
         {/* SQP Letters Container */}
-        <main className="w-full flex-1 flex justify-center items-start py-4">
-          <div className="grid grid-cols-3 gap-6 w-full max-w-[1400px] px-4">
+        <main className="w-full flex-1 flex justify-center items-start pt-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full max-w-[1600px] px-4">
             <LetterDisplay
               letter="S"
               data={dailyData}
@@ -283,16 +306,16 @@ const App: React.FC = () => {
         data={selectedDay ? dailyData[selectedDay] || { production: null, quality: null } : null}
       />
 
-      <footer className="w-full mt-auto pt-6 text-gray-500 text-sm">
+      <footer className="w-full mt-auto pt-6 text-gray-600 text-sm">
         <div className="max-w-screen-xl mx-auto flex justify-between items-center px-4">
-          <p>SQP Tracker by AI Studio</p>
+          <p className="font-semibold">SQP Tracker by AI Studio</p>
           <div className="flex items-center gap-4">
             {showSaveConfirmation && (
-              <span className="text-green-600 animate-fade-in-out">
+              <span className="text-green-700 font-bold animate-fade-in-out">
                 ✓ Data Saved to Device
               </span>
             )}
-            <p>Click on a date to log data.</p>
+            <p className="font-semibold">Click on a date to log data.</p>
           </div>
         </div>
       </footer>
