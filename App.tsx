@@ -361,17 +361,13 @@ const App: React.FC = () => {
         data={selectedDay ? dailyData[selectedDay] || { production: null, quality: null } : null}
       />
 
-      <footer className="w-full mt-auto pt-6 text-gray-600 text-sm">
-        <div className="max-w-screen-xl mx-auto flex justify-between items-center px-4">
-          <p className="font-semibold">SQP Tracker by AI Studio</p>
-          <div className="flex items-center gap-4">
-            {showSaveConfirmation && (
-              <span className="text-green-700 font-bold animate-fade-in-out">
-                ✓ Data Saved to Device
-              </span>
-            )}
-            <p className="font-semibold">Click on a date to log data.</p>
-          </div>
+      <footer className="w-full mt-auto pt-6">
+        <div className="max-w-screen-xl mx-auto flex justify-center items-center px-4">
+          {showSaveConfirmation && (
+            <span className="text-green-700 font-bold animate-fade-in-out">
+              ✓ Data Saved to Device
+            </span>
+          )}
         </div>
       </footer>
       <style>{`
