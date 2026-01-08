@@ -18,25 +18,25 @@ const RangeInput: React.FC<{
   onChange: (id: keyof Thresholds, value: number) => void;
 }> = ({ label, id, value, min, max, step, unit, onChange }) => {
   const percentage = ((value - min) / (max - min)) * 100;
-  
+
   return (
     <div className="grid grid-cols-3 items-center gap-4">
       <label htmlFor={id} className="text-xs text-gray-800 font-semibold col-span-1">{label}</label>
       <div className="col-span-2 flex flex-col">
-          <input
-            type="range"
-            id={id}
-            min={min}
-            max={max}
-            step={step}
-            value={value}
-            onChange={(e) => onChange(id, parseInt(e.target.value, 10))}
-            className="w-full h-2 rounded-lg appearance-none cursor-pointer range-slider"
-            style={{
-              ['--range-progress' as any]: `${percentage}%`
-            }}
-          />
-          <span className="text-blue-800 font-mono text-xs font-bold self-end mt-1">{value.toLocaleString()}{unit}</span>
+        <input
+          type="range"
+          id={id}
+          min={min}
+          max={max}
+          step={step}
+          value={value}
+          onChange={(e) => onChange(id, parseInt(e.target.value, 10))}
+          className="w-full h-2 rounded-lg appearance-none cursor-pointer range-slider"
+          style={{
+            ['--range-progress' as any]: `${percentage}%`
+          }}
+        />
+        <span className="text-blue-800 font-mono text-xs font-bold self-end mt-1">{value.toLocaleString()}{unit}</span>
       </div>
     </div>
   );
@@ -60,40 +60,40 @@ export const ThresholdSettings: React.FC<ThresholdSettingsProps> = ({ thresholds
         </svg>
       </summary>
       <div className="p-3 mt-1 border-t-2 border-gray-700 bg-gray-100 grid md:grid-cols-2 gap-x-6 gap-y-4">
-          <div className="space-y-3">
-              <h4 className="font-bold text-gray-900 text-sm">Production (Units)</h4>
-              <RangeInput 
-                label="Good >="
-                id="productionGood"
-                value={thresholds.productionGood}
-                min={1000} max={10000} step={100} unit=""
-                onChange={handleChange}
-              />
-               <RangeInput 
-                label="Alert <"
-                id="productionAlert"
-                value={thresholds.productionAlert}
-                min={500} max={5000} step={100} unit=""
-                onChange={handleChange}
-              />
-          </div>
-           <div className="space-y-3">
-              <h4 className="font-bold text-gray-900 text-sm">Quality Score (%)</h4>
-               <RangeInput 
-                label="Good >="
-                id="qualityGood"
-                value={thresholds.qualityGood}
-                min={80} max={100} step={1} unit="%"
-                onChange={handleChange}
-              />
-               <RangeInput 
-                label="Alert <"
-                id="qualityAlert"
-                value={thresholds.qualityAlert}
-                min={70} max={90} step={1} unit="%"
-                onChange={handleChange}
-              />
-          </div>
+        <div className="space-y-3">
+          <h4 className="font-bold text-gray-900 text-sm">Production (%)</h4>
+          <RangeInput
+            label="Good >="
+            id="productionGood"
+            value={thresholds.productionGood}
+            min={80} max={100} step={1} unit="%"
+            onChange={handleChange}
+          />
+          <RangeInput
+            label="Alert <"
+            id="productionAlert"
+            value={thresholds.productionAlert}
+            min={70} max={95} step={1} unit="%"
+            onChange={handleChange}
+          />
+        </div>
+        <div className="space-y-3">
+          <h4 className="font-bold text-gray-900 text-sm">Quality Score (%)</h4>
+          <RangeInput
+            label="Good >="
+            id="qualityGood"
+            value={thresholds.qualityGood}
+            min={90} max={100} step={1} unit="%"
+            onChange={handleChange}
+          />
+          <RangeInput
+            label="Alert <"
+            id="qualityAlert"
+            value={thresholds.qualityAlert}
+            min={85} max={99} step={1} unit="%"
+            onChange={handleChange}
+          />
+        </div>
       </div>
     </details>
   );

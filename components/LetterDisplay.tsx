@@ -18,13 +18,13 @@ interface DotPosition {
   y: number;
 }
 
-export const LetterDisplay: React.FC<LetterDisplayProps> = ({ 
-  letter, 
-  data, 
-  onDaySelect, 
-  selectedDay, 
-  daysInMonth, 
-  thresholds 
+export const LetterDisplay: React.FC<LetterDisplayProps> = ({
+  letter,
+  data,
+  onDaySelect,
+  selectedDay,
+  daysInMonth,
+  thresholds
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const [dotPositions, setDotPositions] = useState<DotPosition[]>([]);
@@ -77,29 +77,38 @@ export const LetterDisplay: React.FC<LetterDisplayProps> = ({
     setDotPositions(positions);
   }, [config.count]);
 
-  // Get status for a day
+  // Get status for a day - INDEPENDENT thresholds for each letter
   const getStatus = (day: number): DataStatus | SafetyStatus | 'no-data' => {
     const dayData = data[day];
     if (!dayData) return 'no-data';
 
-    // All letters should reflect Safety status if data exists
+    // S letter: Use Safety status
     if (letter === 'S') {
-      return dayData.safetyStatus || 'safe';
-    } else {
-      // For Q and P, use Safety status if it exists
-      const safetyStatus = dayData.safetyStatus;
-      if (safetyStatus === 'safe') return 'good';
-      if (safetyStatus === 'recordable') return 'warning';
-      if (safetyStatus === 'lost-time') return 'alert';
-      
-      // If Safety status doesn't exist but P or Q data exists, show as good
-      if (letter === 'P' && (dayData.production !== null && dayData.production !== undefined)) {
-        return 'good';
-      }
-      if ((letter === 'Q' || letter === 'O') && (dayData.quality !== null && dayData.quality !== undefined)) {
-        return 'good';
-      }
+      return dayData.safetyStatus || 'no-data';
     }
+
+    // P letter: Use Production percentage thresholds
+    if (letter === 'P') {
+      if (dayData.production === null || dayData.production === undefined) {
+        return 'no-data';
+      }
+      const production = dayData.production;
+      if (production >= thresholds.productionGood) return 'good';
+      if (production < thresholds.productionAlert) return 'alert';
+      return 'warning';
+    }
+
+    // Q letter: Use Quality percentage thresholds
+    if (letter === 'Q' || letter === 'O') {
+      if (dayData.quality === null || dayData.quality === undefined) {
+        return 'no-data';
+      }
+      const quality = dayData.quality;
+      if (quality >= thresholds.qualityGood) return 'good';
+      if (quality < thresholds.qualityAlert) return 'alert';
+      return 'warning';
+    }
+
     return 'no-data';
   };
 
@@ -121,12 +130,12 @@ export const LetterDisplay: React.FC<LetterDisplayProps> = ({
 
   return (
     <div className="bg-gray-800 rounded-lg p-6 shadow-xl w-full flex flex-col border-2 border-gray-900 hover:shadow-2xl transition-shadow">
-      <h2 className="text-center text-lg font-bold tracking-wider pb-2 mb-3" 
-          style={{
-            color: '#ffffff',
-            borderBottom: '3px solid',
-            borderColor: letter === 'S' ? '#64748b' : letter === 'Q' || letter === 'O' ? '#15803d' : '#1e40af'
-          }}>
+      <h2 className="text-center text-lg font-bold tracking-wider pb-2 mb-3"
+        style={{
+          color: '#ffffff',
+          borderBottom: '3px solid',
+          borderColor: letter === 'S' ? '#64748b' : letter === 'Q' || letter === 'O' ? '#15803d' : '#1e40af'
+        }}>
         {config.title}
       </h2>
       <div className="w-full flex items-center justify-center" style={{ height: '400px' }}>
@@ -136,7 +145,7 @@ export const LetterDisplay: React.FC<LetterDisplayProps> = ({
             className={`letter-path ${config.className}`}
             d={config.fillPath}
           />
-          
+
           {/* Invisible path for dot positioning */}
           <path
             className="dot-path"
@@ -149,13 +158,13 @@ export const LetterDisplay: React.FC<LetterDisplayProps> = ({
           {dotPositions.map((pos, index) => {
             const day = index + 1;
             if (day > daysInMonth) return null;
-            
+
             const dayData = data[day];
             const status = getStatus(day);
             const isSelected = selectedDay === day;
-            
+
             let dotClass = 'dot';
-            
+
             // Show colors based on status calculation
             if (status === 'good') dotClass += ' dot-good';
             else if (status === 'warning') dotClass += ' dot-warning';
@@ -164,11 +173,11 @@ export const LetterDisplay: React.FC<LetterDisplayProps> = ({
             else if (status === 'recordable') dotClass += ' dot-recordable';
             else if (status === 'lost-time') dotClass += ' dot-lost-time';
             else dotClass += ' dot-no-data';
-            
+
             if (isSelected) dotClass += ' dot-selected';
 
             // Create tooltip content
-            const tooltipContent = dayData 
+            const tooltipContent = dayData
               ? `Day ${day}\nSafety: ${dayData.safetyStatus || 'N/A'}\nProduction: ${dayData.production !== null ? dayData.production.toLocaleString() : 'N/A'}\nQuality: ${dayData.quality !== null ? dayData.quality + '%' : 'N/A'}`
               : `Day ${day}\nNo data recorded`;
 
