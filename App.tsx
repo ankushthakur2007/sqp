@@ -3,9 +3,12 @@ import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { DailyData, Thresholds, BeforeInstallPromptEvent } from './types';
 import { LetterDisplay } from './components/LetterDisplay';
 import { DataEntryModal } from './components/DataEntryModal';
-import { ChevronLeftIcon, ChevronRightIcon, DownloadIcon } from './components/icons';
+import { ChevronLeftIcon, ChevronRightIcon, DownloadIcon, LogOutIcon } from './components/icons';
 import { ThresholdSettings } from './components/ThresholdSettings';
 import { SelectionSummary } from './components/SelectionSummary';
+import { LoginPage } from './components/LoginPage';
+import { supabase } from './supabaseClient';
+import type { User } from '@supabase/supabase-js';
 
 
 const StatusLegend: React.FC = () => (
@@ -30,9 +33,9 @@ const StatusLegend: React.FC = () => (
 );
 
 
-import { supabase } from './supabaseClient';
-
 const App: React.FC = () => {
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [dailyData, setDailyData] = useState<Record<number, DailyData>>({});
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
@@ -48,9 +51,31 @@ const App: React.FC = () => {
       qualityGood: 95,
       qualityAlert: 85,
     };
+
   });
   const [showSaveConfirmation, setShowSaveConfirmation] = useState(false);
   const saveTimeoutRef = useRef<number | null>(null);
+
+  // Check for existing session on mount and listen for auth changes
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setAuthLoading(false);
+    });
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+  };
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -193,14 +218,34 @@ const App: React.FC = () => {
 
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
 
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <svg className="animate-spin h-10 w-10 text-blue-600" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+          </svg>
+          <p className="text-gray-600 font-semibold">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show login page if not authenticated
+  if (!user) {
+    return <LoginPage onAuthSuccess={() => supabase.auth.getSession().then(({ data: { session } }) => setUser(session?.user ?? null))} />;
+  }
+
   return (
     <div className="min-h-screen bg-white text-gray-900 p-4 sm:p-6 flex flex-col items-center">
       <header className="w-full max-w-screen-xl">
         <div className="flex flex-col sm:flex-row justify-between items-center">
           <div className="flex items-center gap-4">
-            <img 
-              src="/gna-logo.png" 
-              alt="GNA Axles" 
+            <img
+              src="/gna-logo.png"
+              alt="GNA Axles"
               className="h-25 sm:h-40 w-auto object-contain"
             />
           </div>
@@ -210,16 +255,26 @@ const App: React.FC = () => {
             </h1>
             <p className="text-gray-600 text-sm font-semibold">Visualize Safety, Quality & Production Metrics</p>
           </div>
-          {installPrompt && !isStandalone && (
+          <div className="flex items-center gap-2">
+            {installPrompt && !isStandalone && (
+              <button
+                onClick={handleInstallClick}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-3 py-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 whitespace-nowrap text-sm"
+                title="Install App"
+              >
+                <DownloadIcon className="w-4 h-4" />
+                <span className="hidden sm:inline">Install App</span>
+              </button>
+            )}
             <button
-              onClick={handleInstallClick}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-3 py-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 whitespace-nowrap text-sm"
-              title="Install App"
+              onClick={handleLogout}
+              className="flex items-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold px-3 py-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 whitespace-nowrap text-sm"
+              title="Sign Out"
             >
-              <DownloadIcon className="w-4 h-4" />
-              <span className="hidden sm:inline">Install App</span>
+              <LogOutIcon className="w-4 h-4" />
+              <span className="hidden sm:inline">Sign Out</span>
             </button>
-          )}
+          </div>
         </div>
       </header >
 
@@ -246,11 +301,11 @@ const App: React.FC = () => {
           <div className="flex gap-4 items-center">
             <StatusLegend />
           </div>
-          
+
           <div className="flex">
-            <ThresholdSettings 
-              thresholds={thresholds} 
-              onThresholdsChange={setThresholds} 
+            <ThresholdSettings
+              thresholds={thresholds}
+              onThresholdsChange={setThresholds}
             />
           </div>
         </div>
