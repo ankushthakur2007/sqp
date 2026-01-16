@@ -46,10 +46,11 @@ const App: React.FC = () => {
       return JSON.parse(savedThresholds);
     }
     return {
-      productionGood: 95,    // Green >= 95%
-      productionAlert: 85,   // Red < 85%
-      qualityGood: 99,       // Green >= 99%
-      qualityAlert: 97,      // Red < 97%
+      productionTarget: 4000, // Target production in units
+      productionGood: 95,     // Green >= 95% of target
+      productionAlert: 85,    // Red < 85% of target
+      qualityGood: 99,        // Green >= 99%
+      qualityAlert: 97,       // Red < 97%
     };
 
   });

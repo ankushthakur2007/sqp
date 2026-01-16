@@ -87,14 +87,15 @@ export const LetterDisplay: React.FC<LetterDisplayProps> = ({
       return dayData.safetyStatus || 'no-data';
     }
 
-    // P letter: Use Production percentage thresholds
+    // P letter: Use Production percentage thresholds (compare actual vs target)
     if (letter === 'P') {
       if (dayData.production === null || dayData.production === undefined) {
         return 'no-data';
       }
-      const production = dayData.production;
-      if (production >= thresholds.productionGood) return 'good';
-      if (production < thresholds.productionAlert) return 'alert';
+      // Calculate percentage achieved: (actual / target) * 100
+      const percentageAchieved = (dayData.production / thresholds.productionTarget) * 100;
+      if (percentageAchieved >= thresholds.productionGood) return 'good';
+      if (percentageAchieved < thresholds.productionAlert) return 'alert';
       return 'warning';
     }
 

@@ -61,19 +61,35 @@ export const ThresholdSettings: React.FC<ThresholdSettingsProps> = ({ thresholds
       </summary>
       <div className="p-3 mt-1 border-t-2 border-gray-700 bg-gray-100 grid md:grid-cols-2 gap-x-6 gap-y-4">
         <div className="space-y-3">
-          <h4 className="font-bold text-gray-900 text-sm">Production (%)</h4>
+          <h4 className="font-bold text-gray-900 text-sm">Production</h4>
+          <div className="grid grid-cols-3 items-center gap-4">
+            <label htmlFor="productionTarget" className="text-xs text-gray-800 font-semibold col-span-1">Target</label>
+            <div className="col-span-2 flex flex-col">
+              <input
+                type="number"
+                id="productionTarget"
+                min={100}
+                max={50000}
+                step={100}
+                value={thresholds.productionTarget}
+                onChange={(e) => handleChange('productionTarget', parseInt(e.target.value, 10) || 0)}
+                className="w-full h-8 px-2 rounded-lg border-2 border-gray-400 focus:border-blue-500 focus:outline-none text-sm font-mono"
+              />
+              <span className="text-gray-600 text-xs mt-1">Daily goal in units</span>
+            </div>
+          </div>
           <RangeInput
             label="Good >="
             id="productionGood"
             value={thresholds.productionGood}
-            min={80} max={100} step={1} unit="%"
+            min={80} max={100} step={1} unit="% of target"
             onChange={handleChange}
           />
           <RangeInput
             label="Alert <"
             id="productionAlert"
             value={thresholds.productionAlert}
-            min={70} max={95} step={1} unit="%"
+            min={70} max={95} step={1} unit="% of target"
             onChange={handleChange}
           />
         </div>

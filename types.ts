@@ -11,8 +11,9 @@ export type Letter = 'S' | 'O' | 'P' | 'Q';
 export type DataStatus = 'good' | 'warning' | 'alert' | 'default';
 
 export interface Thresholds {
-  productionGood: number;
-  productionAlert: number;
+  productionTarget: number;  // Target/goal for production (e.g., 4000 units)
+  productionGood: number;    // Good if >= this % of target
+  productionAlert: number;   // Alert if < this % of target
   qualityGood: number;
   qualityAlert: number;
 }
