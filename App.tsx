@@ -106,6 +106,7 @@ const App: React.FC = () => {
     console.log('🔍 Fetching data from Supabase...');
     console.log('Date range:', startDate, 'to', endDate);
 
+    // Fetch daily entries
     const { data, error } = await supabase
       .from('daily_entries')
       .select('*')
@@ -131,13 +132,32 @@ const App: React.FC = () => {
       };
     });
     setDailyData(newDailyData);
+
+    // Fetch monthly target
+    const { data: targetData, error: targetError } = await supabase
+      .from('monthly_targets')
+      .select('production_target')
+      .eq('year', year)
+      .eq('month', month + 1) // DB stores 1-12, JS uses 0-11
+      .single();
+
+    if (!targetError && targetData) {
+      setThresholds(prev => ({
+        ...prev,
+        productionTarget: targetData.production_target
+      }));
+      console.log(`🎯 Production target for ${monthName}: ${targetData.production_target}`);
+    } else {
+      console.log(`📝 No target set for ${monthName}, using default`);
+    }
   }, [currentDate]);
 
   useEffect(() => {
     fetchMonthData();
   }, [fetchMonthData]);
 
-  // Save thresholds to localStorage when they change
+  // Save thresholds to localStorage (for non-target settings)
+  // and save productionTarget to database for the current month
   useEffect(() => {
     try {
       localStorage.setItem('pq-tracker-thresholds', JSON.stringify(thresholds));
@@ -145,6 +165,43 @@ const App: React.FC = () => {
       console.error("Failed to save thresholds to local storage:", error);
     }
   }, [thresholds]);
+
+  // Save production target to database when it changes
+  const saveProductionTarget = useCallback(async (target: number) => {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth() + 1; // DB stores 1-12
+
+    const { error } = await supabase
+      .from('monthly_targets')
+      .upsert(
+        { year, month, production_target: target },
+        { onConflict: 'year,month' }
+      );
+
+    if (error) {
+      console.error('Error saving production target:', error);
+    } else {
+      const monthStr = currentDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+      console.log(`✅ Saved production target ${target} for ${monthStr}`);
+    }
+  }, [currentDate]);
+
+  // Debounced save for production target
+  const targetSaveTimeoutRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (targetSaveTimeoutRef.current) {
+      clearTimeout(targetSaveTimeoutRef.current);
+    }
+    targetSaveTimeoutRef.current = window.setTimeout(() => {
+      saveProductionTarget(thresholds.productionTarget);
+    }, 1000); // Save after 1 second of no changes
+
+    return () => {
+      if (targetSaveTimeoutRef.current) {
+        clearTimeout(targetSaveTimeoutRef.current);
+      }
+    };
+  }, [thresholds.productionTarget, saveProductionTarget]);
 
   const daysInMonth = useMemo(() => {
     return new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();

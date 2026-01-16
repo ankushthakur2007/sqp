@@ -96,10 +96,47 @@ CREATE TRIGGER update_daily_entries_updated_at
     EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================
+-- Step 5.5: Create monthly_targets table
+-- ============================================
+-- Stores production targets and other settings per month
+CREATE TABLE IF NOT EXISTS public.monthly_targets (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    year INTEGER NOT NULL,
+    month INTEGER NOT NULL,
+    production_target INTEGER DEFAULT 4000,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(year, month)
+);
+
+-- Create index for faster month lookups
+CREATE INDEX IF NOT EXISTS idx_monthly_targets_year_month ON public.monthly_targets(year, month);
+
+-- Enable RLS
+ALTER TABLE public.monthly_targets ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies for monthly_targets
+CREATE POLICY "Users can view all targets" ON public.monthly_targets
+    FOR SELECT TO authenticated USING (true);
+
+CREATE POLICY "Users can insert targets" ON public.monthly_targets
+    FOR INSERT TO authenticated WITH CHECK (true);
+
+CREATE POLICY "Users can update targets" ON public.monthly_targets
+    FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+
+-- Trigger for updated_at
+CREATE TRIGGER update_monthly_targets_updated_at
+    BEFORE UPDATE ON public.monthly_targets
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================
 -- Step 6: Grant permissions
 -- ============================================
 GRANT USAGE ON SCHEMA public TO authenticated;
 GRANT ALL ON public.daily_entries TO authenticated;
+GRANT ALL ON public.monthly_targets TO authenticated;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO authenticated;
 
 -- ============================================
